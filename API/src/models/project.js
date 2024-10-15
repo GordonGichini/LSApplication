@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/connection');
-const Customer = require('../models/customer');
+const sequelize = require('../config/database');
 
 const Project = sequelize.define('Project', {
     name: {
@@ -9,11 +8,20 @@ const Project = sequelize.define('Project', {
     },
     description: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    customerId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: 'Customers',
+            key: 'id',
+        },
     },
 });
 
-Project.belongsTo(Customer, { foreignKey: 'customerId' });
-Customer.hasMany(Project, { foreignKey: 'customerId' });
+Project.associate = function(models) {
+    Project.belongsTo(models.Customer, { foreignKey: 'customerId', as: 'customer' });
+};
 
 module.exports = Project;
