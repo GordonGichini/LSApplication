@@ -1,7 +1,8 @@
-const Project = require('../models/project');
+const Project = require('../../models/project');
 
 exports.createProject = async (req, res) => {
     try {
+        const { name, description, customerId } = req.body;
         const project = await Project.create(req.body);
         res.status(201).json(project);
     } catch (error) {
@@ -11,7 +12,7 @@ exports.createProject = async (req, res) => {
 
 exports.getAllProjects = async (req, res) => {
     try {
-        const projects = await Project.findAll();
+        const projects = await Project.findAll({ include: { model: Customer, as: 'customer' } });
         res.status(200).json(projects);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -20,8 +21,13 @@ exports.getAllProjects = async (req, res) => {
 
 exports.getProjectById = async (req, res) => {
     try {
+        const { name, description, customerId } = req.body;
         const project = await Project.findByPk(req.params.id);
         if (project) {
+            project.name = name;
+            project.description = description;
+            project.customerId = customerId;
+            await project.save();
             res.status(200).json(project);
         } else {
             res.status(404).json({ message: 'Project not found' });
